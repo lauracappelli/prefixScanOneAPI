@@ -5,13 +5,9 @@
 #include <dpct/dpct.hpp>
 #include <cstdint>
 
-//#include "CUDACore/cudaCompat.h"
-//#include "CUDACore/cuda_assert.h"
-
 #ifdef DPCPP_COMPATIBILITY_TEMP
 template <typename T>
-void __dpct_inline__
-warpPrefixScan(T const* __restrict__ ci, T* __restrict__ co, uint32_t i, sycl::nd_item<3> item_ct1) {
+void __dpct_inline__ warpPrefixScan(T const* __restrict__ ci, T* __restrict__ co, uint32_t i, sycl::nd_item<3> item_ct1) {
   // ci and co may be the same
   auto x = ci[i];
   auto laneId = item_ct1.get_local_id(2) & 0x1f;

@@ -67,8 +67,13 @@ void verify(uint32_t const *v, uint32_t n, sycl::nd_item<3> item_ct1, sycl::stre
 int main() {
   dpct::device_ext &dev_ct1 = dpct::get_current_device();
   sycl::queue &q_ct1 = dev_ct1.default_queue();
+  //sycl::cpu_selector c_sel;
+  //sycl::queue q_ct1(c_sel);
+  std::cout << q_ct1.get_device().get_info<sycl::info::device::name>() << "\n";
+  //dpct::device_ext dev_ct1 = q_ct1.get_device();
   std::cout << "warp level" << std::endl;
-  // std::cout << "warp 32" << std::endl;
+  std::cout << "warp 32" << std::endl;
+
   q_ct1.submit([&](sycl::handler &cgh) {
     sycl::stream stream_ct1(64 * 1024, 80, cgh);
 
@@ -78,13 +83,15 @@ int main() {
                                                                                                    cgh);
 
     cgh.parallel_for(
-        sycl::nd_range<3>(sycl::range<3>(1, 1, 32), sycl::range<3>(1, 1, 32)), [=](sycl::nd_item<3> item_ct1) {
+        sycl::nd_range<3>(sycl::range<3>(1, 1, 16), sycl::range<3>(1, 1, 16)), [=](sycl::nd_item<3> item_ct1)[[cl::intel_reqd_sub_group_size(32)]] 
+        {
+          stream_ct1 << "ok \n";
           testWarpPrefixScan<int>(32, item_ct1, stream_ct1, c_acc_ct1.get_pointer(), co_acc_ct1.get_pointer());
         });
   });
   dev_ct1.queues_wait_and_throw();
 
-  // std::cout << "warp 16" << std::endl;
+  std::cout << "warp 16" << std::endl;
   q_ct1.submit([&](sycl::handler &cgh) {
     sycl::stream stream_ct1(64 * 1024, 80, cgh);
 
